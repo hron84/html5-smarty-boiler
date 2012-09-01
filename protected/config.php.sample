@@ -1,0 +1,50 @@
+<?php
+// site configuration
+$config = array();
+
+// App data
+$config['app_title'] = 'HTML 5 Boilerplate';
+$config['app_name'] = 'HTMLBP';
+
+// debug mode
+$config['debug'] = true;
+
+// Default controller
+$config['default_controller'] = 'dashboard';
+
+// Server-related
+$config['session_save_path'] = session_save_path();
+
+// $config['BASE_URL'] = 'https://html5.hron.me'; // URL to index
+// $config['SESSION_URL'] = '.html5.hron.me'; // URL for session cookie on client
+
+// PHP log file
+$config['logfile'] = APPLICATION_PATH . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 
+                    $config['app_name'] . ($config['debug'] ? '_debug' : '_stable') . '.log';
+
+
+// DB.php Connection Info
+$config['db-params'] = array(
+  'production' => array(
+      'scheme' => 'mysql',
+      'host' => 'localhost',
+      'port' => 3306,
+      'dbname' => 'foodb',
+      'username' => 'foo',
+      'password' => 'bar',
+    ),
+
+);
+
+// ActiveRecord Connection info
+
+// $config['db-params'] = array(
+//   'production' => 'mysql://hronu:aeyeedieduol@localhost/hronDB',
+//   'test' => 'sqlite://' . APPLICATION_PATH . '/db/test.db',
+// );
+
+// SSSSHHHHH
+$config['secret'] = '***** THIS IS YOUR VERY SECRET COOKIE KEY, REPLACE IT ASAP *****';
+$config['e64secret'] = base64_encode($config['secret']);
+
+// vim: ft=php

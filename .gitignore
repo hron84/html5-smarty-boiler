@@ -1,0 +1,5 @@
+db/*.db
+db/*.sqlite3
+share/cache/templates_c/*.php
+share/db/*/*.sql
+

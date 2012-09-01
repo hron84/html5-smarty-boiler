@@ -1,0 +1,101 @@
+<?php
+
+class UsersController extends AbstractController {
+  private function loadUser($id) {
+    if(is_numeric($id)) {
+      $user = User::find($id);
+    } else {
+      $user = User::findByQuery(array('login' => $id));
+    }
+    return $user;
+  }
+
+  private function loadAllUsers() {
+    $users = User::findAll(array(), array('id' => 'ASC'));
+    return $users;
+  }
+
+  public function login() {
+    $params = $this->request->params;
+    $errors = array();
+    if(!array_key_exists('login', $params) || !array_key_exists('password', $params)) {
+      $errors[] = 'No username or password given';
+    } else {
+      $user = User::authenticate($params['login'], $params['password']);
+
+      if($user) {
+        $this->request->session->currentUserId = $user->id;
+        $this->renderJSON(array('success' => true, 'user' => $user, 'session' => $_SESSION, 'cookies' => $_COOKIE));
+        return;
+      } else {
+        $errors[] = 'Invalid username or password';
+      }
+    }
+    $this->renderJSON(array('success' => false, 'errors' => $errors));
+  }
+
+  public function logout() {
+    $this->request->session->remove('currentUserId');
+    $this->renderJSON(array('success' => true));
+  }
+
+  private function checkLoggedIn() {
+    if(!$this->request->session->currentUserId) {
+      $this->redirect_to('/users/login');
+    }
+  }
+
+  // {{{ CRUD operations
+  public function create() {
+  }
+  public function read() {
+    $this->checkLoggedIn();
+    if(isset($this->request->params['id'])) {
+      $user = $this->loadUser($this->request->params['id']);
+      if($user) {
+        $this->renderJSON(array('success' => true, 'total' => User::count(), 'user' => $user));
+      } else {
+        $this->renderJSON(array('success' => false, 'errors' => array("No user found with ID {$this->request->params['id']}")));
+      }
+    } else {
+      $this->renderJSON(array('success' => false, 'errors' => array('No user ID passed')));
+    }
+  }
+  public function update() {
+    $params = $this->request->params;
+
+    if(!empty($params['password']) && !empty($params['password_confirmation'])) {
+      if($params['password'] == $params['password_confirmation']) {
+        $params['password'] = md5($params['password']);
+
+        unset($params['password_confirmation']);
+      } else {
+        $this->renderJSON(array('success' => false, 'errors' => array('Password and confirmation not matches')));
+        return;
+      }
+    } else {
+      unset($params['password']);
+      unset($params['password_confirmation']);
+    }
+
+    $user = $this->loadUser($params['id']);
+
+    if($user) {
+      $user = $user->updateAttributes($params);
+      if($user) {
+        $this->renderJSON(array('success' => true, 'users' => $user ));
+      } else {
+        $this->renderJSON(array('success' => false, 'errors' => array('Error happened during updating user')));
+      }
+    } else {
+      $this->renderJSON(array('success' => false, 'errors' => array("No user found with id {$params['id']}")));
+    }
+  }
+  public function destroy() {
+  }
+  public function listAll() {
+      $this->checkLoggedIn();
+      $this->renderJSON(array('success' => true, 'users' => $this->loadAllUsers()));
+  }
+  // }}}
+}
